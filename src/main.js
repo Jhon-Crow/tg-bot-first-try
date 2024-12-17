@@ -3,12 +3,70 @@ import config from "config";
 import { withIntervalSMS } from "./withIntervalSMS.js";
 import { taskList } from "./taskList.js";
 import {helpMessage} from "./helpMessage.js";
+import OpenAI from "openai";
+import axios from "axios";
 
 const bot = new Telegraf(config.get('TELEGRAM_TOKEN'));
 
 let intervalId;
 let intervalMinutes;
 let isFirstEnter = true;
+
+
+
+
+const openai = new OpenAI({
+    apiKey: config.get('GPT_API_KEY'),
+    baseURL: 'https://api.pawan.krd/v1', // Хостинг API
+});
+
+async function getChatResponse(message) {
+    const chatCompletion = await openai.chat.completions.create({
+        model: 'pai-001-light',
+        messages: [{ role: 'user', content: message }],
+    });
+
+    console.log(chatCompletion.choices[0].message.content);
+    return chatCompletion.choices[0].message.content;
+}
+
+async function getChatRemainingCredits() {
+    try {
+        const res = await axios.get('https://api.pawan.krd/info', {
+            headers: {
+                'Authorization': `Bearer ${config.get('GPT_API_KEY')}`
+            }
+        });
+
+        const { credit } = res.data.info;
+        return `Оставшиеся кредиты: ${credit}`;
+    } catch (error) {
+        return 'Ошибка при получении кредитов: ' + error;
+    }
+}
+
+bot.command('gpt', async (ctx) => {
+    ctx.reply('gpt works')
+        if (ctx.message.text.replace(/\/[^ ]*\s?/, '').trim()){
+            const res = await getChatResponse(ctx.message.text.replace(/\/[^ ]*\s?/, '').trim())
+            await ctx.reply(res);
+            await ctx.reply(await getChatRemainingCredits());
+        }
+});
+
+bot.command('info', async (ctx) => {
+    ctx.reply('getting info')
+            const res = await getChatRemainingCredits();
+            await ctx.reply(res);
+});
+
+
+
+
+
+
+
+
 
 const promptForStart = async (ctx) =>  {
     if(isFirstEnter) {
