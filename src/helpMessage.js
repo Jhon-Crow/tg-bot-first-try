@@ -1,4 +1,4 @@
-export function helpMessage(ctx, pinIt) {
+export function helpMessage(ctx, pinIt, intervalMinutes) {
     const helpText = 'Команды: \n' +
         '    /start - запустить напоминалку\n' +
         '    /stop - остановить\n' +
@@ -7,7 +7,10 @@ export function helpMessage(ctx, pinIt) {
         '    /showlist - показать весь список задач\n' +
         '    /deltask - удалить последнюю задачу\n' +
         '    /delAll - удалить ВЕСЬ СПИСОК\n' +
-        '    /help - вызвать это сообщение'
+        '    /help - вызвать это сообщение\n' +
+        '\n' +
+        '' + `Интервал ${intervalMinutes ? intervalMinutes + ' minutes' : 'не задан'}`
+
 
         ctx.reply(helpText, { parse_mode: 'HTML' }).then(
             sentMessage => {

@@ -78,7 +78,7 @@ const promptForStart = async (ctx) =>  {
     await ctx.reply(`Напоминание о задаче: \n <b>${taskList[0]}</b> \n будет отправляться каждые ${intervalMinutes} минут(ы)`, {parse_mode: 'HTML'});
 }
 
-bot.command('help', (ctx) => helpMessage(ctx));
+bot.command('help', (ctx) => helpMessage(ctx, isFirstEnter, intervalMinutes));
 
 bot.command('start', async (ctx) => promptForStart(ctx));
 
