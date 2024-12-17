@@ -12,21 +12,16 @@ let intervalId;
 let intervalMinutes;
 let isFirstEnter = true;
 
-
-
-
 const openai = new OpenAI({
     apiKey: config.get('GPT_API_KEY'),
-    baseURL: 'https://api.pawan.krd/v1', // Хостинг API
+    baseURL: 'https://api.pawan.krd/v1',
 });
 
 async function getChatResponse(message) {
     const chatCompletion = await openai.chat.completions.create({
-        model: 'pai-001-light',
+        model: 'pai-001-rp',
         messages: [{ role: 'user', content: message }],
     });
-
-    console.log(chatCompletion.choices[0].message.content);
     return chatCompletion.choices[0].message.content;
 }
 
@@ -45,28 +40,22 @@ async function getChatRemainingCredits() {
     }
 }
 
-bot.command('gpt', async (ctx) => {
-    ctx.reply('gpt works')
-        if (ctx.message.text.replace(/\/[^ ]*\s?/, '').trim()){
-            const res = await getChatResponse(ctx.message.text.replace(/\/[^ ]*\s?/, '').trim())
-            await ctx.reply(res);
-            await ctx.reply(await getChatRemainingCredits());
-        }
-});
+export const promptForGptAsk = async (ctx, text) => {
+    // ctx.reply('gpt works');
+    if (text){
+        const res = await getChatResponse(text);
+        await ctx.reply(res);
+        // await ctx.reply(await getChatRemainingCredits());
+    }
+}
+
+bot.command('gpt', async (ctx) => promptForGptAsk(ctx, ctx.message.text.replace(/\/[^ ]*\s?/, '').trim()));
 
 bot.command('info', async (ctx) => {
     ctx.reply('getting info')
             const res = await getChatRemainingCredits();
             await ctx.reply(res);
 });
-
-
-
-
-
-
-
-
 
 const promptForStart = async (ctx) =>  {
     if(isFirstEnter) {
@@ -86,7 +75,7 @@ const promptForStart = async (ctx) =>  {
         clearInterval(intervalId);
     }
     intervalId = withIntervalSMS(ctx, taskList[0], intervalMinutes);
-    await ctx.reply(`Сообщение \n <b>${taskList[0]}</b> \n будет отправляться каждые ${intervalMinutes} минут(ы)`, {parse_mode: 'HTML'});
+    await ctx.reply(`Напоминание о задаче: \n <b>${taskList[0]}</b> \n будет отправляться каждые ${intervalMinutes} минут(ы)`, {parse_mode: 'HTML'});
 }
 
 bot.command('help', (ctx) => helpMessage(ctx));
