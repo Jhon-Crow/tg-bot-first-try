@@ -1,4 +1,6 @@
-export function helpMessage(ctx, pinIt, intervalMinutes) {
+import {taskList} from "./taskList.js";
+
+export function helpMessage(ctx, pinIt, intervalMinutes, intervalId) {
     const helpText = 'Команды: \n' +
         '    /start - запустить напоминалку\n' +
         '    /stop - остановить\n' +
@@ -9,7 +11,7 @@ export function helpMessage(ctx, pinIt, intervalMinutes) {
         '    /delAll - удалить ВЕСЬ СПИСОК\n' +
         '    /help - вызвать это сообщение\n' +
         '\n' +
-        '' + `Интервал ${intervalMinutes ? intervalMinutes + ' minutes' : 'не задан'}`
+        '' + `Интервал <b>${intervalMinutes ? intervalMinutes + ' minutes' : 'не задан'} (${intervalId ? intervalId + ' активен' : 'нет активного'})</b> \n\nАктивная задача: <b>${taskList.length ? taskList[0] : 'не задана'}</b>`
 
 
         ctx.reply(helpText, { parse_mode: 'HTML' }).then(
