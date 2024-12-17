@@ -17,7 +17,6 @@ const openai = new OpenAI({
     baseURL: 'https://api.pawan.krd/v1',
 });
 
-// Создаем сцену для установки интервала
 const intervalScene = new Scenes.BaseScene('intervalScene');
 
 intervalScene.enter((ctx) => {
@@ -39,7 +38,6 @@ intervalScene.on('text', async (ctx) => {
     }
 });
 
-// Создаем экземпляр сцены
 const stage = new Scenes.Stage([intervalScene]);
 bot.use(session());
 bot.use(stage.middleware());
