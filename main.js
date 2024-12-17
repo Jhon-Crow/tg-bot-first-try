@@ -5,12 +5,12 @@ import { taskList } from "./src/taskList.js";
 import { helpMessage } from "./src/helpMessage.js";
 import OpenAI from "openai";
 import axios from "axios";
+import {statusMessage} from "./src/statusMessage.js";
 
 const bot = new Telegraf(config.get('TELEGRAM_TOKEN'));
 
 let intervalId;
 let intervalMinutes;
-let isFirstEnter = true;
 
 const openai = new OpenAI({
     apiKey: config.get('GPT_API_KEY'),
@@ -31,8 +31,9 @@ intervalScene.on('text', async (ctx) => {
     if (!isNaN(intervalNumber) && intervalNumber > 0) {
         intervalMinutes = intervalNumber;
         await ctx.reply(`Интервал ${intervalMinutes} минут(ы)`);
-        await ctx.scene.leave(); // Выходим из сцены
-        await promptForStart(ctx); // Запускаем следующий шаг
+        await ctx.scene.leave();
+        await statusMessage(ctx, intervalMinutes, intervalId);
+        if (!intervalId) await ctx.reply(`Чтобы запустить напоминание о <b>${taskList[0]}</b> каждые ${intervalMinutes} минут\n/start `, { parse_mode: 'HTML' });
     } else {
         await ctx.reply("Пожалуйста, введите корректное положительное число минут.");
     }
@@ -51,7 +52,7 @@ async function getChatResponse(message) {
     return chatCompletion.choices[0].message.content;
 }
 
-async function getChatRemainingCredits() {
+export async function getChatRemainingCredits() {
     try {
         const res = await axios.get('https://api.pawan.krd/info', {
             headers: {
@@ -60,7 +61,7 @@ async function getChatRemainingCredits() {
         });
 
         const { credit } = res.data.info;
-        return `Оставшиеся кредиты: ${credit}`;
+        return `Оставшиеся кредиты: ${Math.round(credit)}`;
     } catch (error) {
         return 'Ошибка при получении кредитов: ' + error;
     }
@@ -73,18 +74,21 @@ export const promptForGptAsk = async (ctx, text) => {
     }
 }
 
-bot.command('gpt', async (ctx) => promptForGptAsk(ctx, ctx.message.text.replace(/\/[^ ]*\s?/, '').trim()));
+bot.command('gpt', async (ctx) => {
+    await promptForGptAsk(ctx, ctx.message.text.replace(/\/[^ ]*\s?/, '').trim())
+    await statusMessage(ctx, intervalMinutes, intervalId);
+});
 
 bot.command('info', async (ctx) => {
     const res = await getChatRemainingCredits();
     await ctx.reply(res);
 });
 
+
+
 const promptForStart = async (ctx) => {
-    if (isFirstEnter) {
-        helpMessage(ctx, isFirstEnter);
-        isFirstEnter = false;
-    }
+        helpMessage(ctx);
+
     if (!taskList[0]) {
         await ctx.reply('Список задач пуст! Используйте /todo + "ваш текст" чтобы добавить задачу');
         return;
@@ -100,9 +104,13 @@ const promptForStart = async (ctx) => {
     await ctx.reply(`Напоминание о задаче: \n <b>${taskList[0]}</b> \n будет отправляться каждые ${intervalMinutes} минут(ы)`, { parse_mode: 'HTML' });
 }
 
-bot.command('help', (ctx) => helpMessage(ctx, isFirstEnter, intervalMinutes, intervalId));
+bot.command('help', (ctx) => helpMessage(ctx, intervalMinutes, intervalId));
+bot.command('status', (ctx) => statusMessage(ctx, intervalMinutes, intervalId));
 
-bot.command('start', async (ctx) => promptForStart(ctx));
+bot.command('start', async (ctx) => {
+    await promptForStart(ctx);
+    await statusMessage(ctx, intervalMinutes, intervalId);
+});
 
 const promptForStop = async (ctx) => {
     if (intervalId) {
@@ -114,17 +122,21 @@ const promptForStop = async (ctx) => {
     }
 }
 
-bot.command('stop', async (ctx) => promptForStop(ctx));
+bot.command('stop', async (ctx) => {
+    await promptForStop(ctx);
+    await statusMessage(ctx, intervalMinutes, intervalId);
+});
 
 bot.command('todo', async (ctx) => {
     const taskText = ctx.message.text.replace(/\/[^ ]*\s?/, '').trim();
     if (taskText) {
         taskList.unshift(taskText);
         await ctx.reply(`Добавлена задача ☐<b>${taskList[0]}</b>`, { parse_mode: 'HTML' });
-        await ctx.reply('Для запуска просто нажми /start')
+        await ctx.reply(intervalId ? 'Для запуска просто нажми /start' : 'Задай частоту сообщений /setinterval')
     } else {
         await ctx.reply('Некорректный текст задачи');
     }
+    await statusMessage(ctx, intervalMinutes, intervalId);
 });
 
 bot.command('setinterval', async (ctx) => {
@@ -147,11 +159,13 @@ bot.command('deltask', async (ctx) => {
         }
         intervalId = await withIntervalSMS(ctx, taskList[0], intervalMinutes);
     }
+    await statusMessage(ctx, intervalMinutes, intervalId);
 });
 
 bot.command('delAll', async (ctx) => {
-    taskList.length = 0; // Очищаем список задач
+    taskList.length = 0;
     ctx.reply('Весь список удалён!');
+    await statusMessage(ctx, intervalMinutes, intervalId);
 });
 
 bot.launch();
