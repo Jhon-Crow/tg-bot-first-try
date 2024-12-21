@@ -184,7 +184,7 @@ bot.command('delAll', async (ctx) => {
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         // Обработка обновлений от Telegram
-        bot.handleUpdate(req.body);
+        await bot.handleUpdate(req.body);
         res.status(200).send('OK');
     } else {
         res.status(405).send('Method Not Allowed');
