@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
-    "config": "^3.3.12",
+    "dotenv": "^16.4.7",
     "gtts": "^0.2.1",
     "openai": "^4.76.3",
     "telegraf": "^4.16.3"

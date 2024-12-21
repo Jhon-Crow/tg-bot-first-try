@@ -8,15 +8,16 @@ import axios from "axios";
 import {statusMessage} from "./src/statusMessage.js";
 import {isUserOnline} from "./src/isUserOnline.js";
 import {convertTextToAudio} from "./src/textToAudio.js";
-import fs, { promises as fsPromises } from 'fs';
-
-const bot = new Telegraf(config.get('TELEGRAM_TOKEN'));
+import {promises as fsPromises} from 'fs';
+import dotenv from 'dotenv';
+dotenv.config();
+const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
 let intervalId;
 let intervalMinutes;
 
 const openai = new OpenAI({
-    apiKey: config.get('GPT_API_KEY'),
+    apiKey: process.env.GPT_API_KEY,
     baseURL: 'https://api.pawan.krd/v1',
 });
 
@@ -57,7 +58,7 @@ export async function getChatRemainingCredits() {
     try {
         const res = await axios.get('https://api.pawan.krd/info', {
             headers: {
-                'Authorization': `Bearer ${config.get('GPT_API_KEY')}`
+                'Authorization': `Bearer ${process.env.GPT_API_KEY}`
             }
         });
 
