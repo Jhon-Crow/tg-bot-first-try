@@ -94,7 +94,6 @@ bot.command('gpt', async (ctx) => {
 });
 
 bot.command('info', async (ctx) => {
-    await setWebhook();
     const res = await getChatRemainingCredits();
     await ctx.reply(res);
 });
@@ -193,6 +192,7 @@ export default async function handler(req, res) {
     }
 }
 
+await setWebhook();
 // bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
