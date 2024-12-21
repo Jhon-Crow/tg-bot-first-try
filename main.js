@@ -1,11 +1,14 @@
-import { Telegraf, Scenes, session } from "telegraf";
+import {Scenes, session, Telegraf} from "telegraf";
 import config from "config";
-import { withIntervalSMS } from "./src/withIntervalSMS.js";
-import { taskList } from "./src/taskList.js";
-import { helpMessage } from "./src/helpMessage.js";
+import {withIntervalSMS} from "./src/withIntervalSMS.js";
+import {taskList} from "./src/taskList.js";
+import {helpMessage} from "./src/helpMessage.js";
 import OpenAI from "openai";
 import axios from "axios";
 import {statusMessage} from "./src/statusMessage.js";
+import {isUserOnline} from "./src/isUserOnline.js";
+import {convertTextToAudio} from "./src/textToAudio.js";
+import fs, { promises as fsPromises } from 'fs';
 
 const bot = new Telegraf(config.get('TELEGRAM_TOKEN'));
 
@@ -65,10 +68,21 @@ export async function getChatRemainingCredits() {
     }
 }
 
-export const promptForGptAsk = async (ctx, text) => {
-    if (text) {
+export const promptForGptAsk = async (ctx, text, isAudioAnswer) => {
+    if (text && await isUserOnline(ctx)) {
         const res = await getChatResponse(text);
-        await ctx.reply(res);
+        if (isAudioAnswer) {
+            try {
+                const { source: audioFilePath } = await convertTextToAudio(res); // Получаем путь к аудиофайлу
+                await ctx.replyWithVoice({ source: audioFilePath });
+                await fsPromises.unlink(audioFilePath);
+                console.log(`Файл ${audioFilePath} успешно удалён.`);
+            } catch (error) {
+                console.error(`Ошибка при обработке аудиофайла: ${error}`);
+            }
+        } else {
+            await ctx.reply(res);
+        }
     }
 }
 
