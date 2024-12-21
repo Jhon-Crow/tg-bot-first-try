@@ -1,5 +1,4 @@
 import {Scenes, session, Telegraf} from "telegraf";
-import config from "config";
 import {withIntervalSMS} from "../src/withIntervalSMS.js";
 import {taskList} from "../src/taskList.js";
 import {helpMessage} from "../src/helpMessage.js";
@@ -10,6 +9,7 @@ import {isUserOnline} from "../src/isUserOnline.js";
 import {convertTextToAudio} from "../src/textToAudio.js";
 import {promises as fsPromises} from 'fs';
 import dotenv from 'dotenv';
+
 dotenv.config();
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
