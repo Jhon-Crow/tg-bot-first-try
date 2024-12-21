@@ -9,6 +9,7 @@ import {isUserOnline} from "../src/isUserOnline.js";
 import {convertTextToAudio} from "../src/textToAudio.js";
 import {promises as fsPromises} from 'fs';
 import dotenv from 'dotenv';
+import {setWebhook} from "./setWebhook.js";
 
 dotenv.config();
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
@@ -93,6 +94,7 @@ bot.command('gpt', async (ctx) => {
 });
 
 bot.command('info', async (ctx) => {
+    await setWebhook();
     const res = await getChatRemainingCredits();
     await ctx.reply(res);
 });
@@ -191,6 +193,6 @@ export default async function handler(req, res) {
     }
 }
 
-bot.launch();
+// bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
