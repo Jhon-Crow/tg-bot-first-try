@@ -1,5 +1,5 @@
 import {taskList} from "./taskList.js";
-import {getChatRemainingCredits} from "../main.js";
+import {getChatRemainingCredits} from "../api/webhook.js";
 
 let statusMessageId;
 export async function statusMessage(ctx, intervalMinutes, intervalId) {

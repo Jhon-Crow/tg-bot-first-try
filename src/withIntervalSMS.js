@@ -1,4 +1,4 @@
-import {promptForGptAsk} from "../main.js";
+import {promptForGptAsk} from "../api/webhook.js";
 import dotenv from 'dotenv';
 dotenv.config();
 const firstPart = process.env.GPT_TEMPLATE_1;
