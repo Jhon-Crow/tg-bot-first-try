@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export async function setWebhook() {
     try {
-        const webhookUrl = `https://${process.env.PROJECT_NAME}.vercel.app/api/webhook`;
+        const webhookUrl = 'https://tg-bot-first-try-219t.vercel.app/api/webhook';
         const response = await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/setWebhook`, {
             url: webhookUrl
         });
