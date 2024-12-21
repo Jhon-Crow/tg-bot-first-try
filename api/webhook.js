@@ -181,6 +181,16 @@ bot.command('delAll', async (ctx) => {
     await statusMessage(ctx, intervalMinutes, intervalId);
 });
 
+export default async function handler(req, res) {
+    if (req.method === 'POST') {
+        // Обработка обновлений от Telegram
+        bot.handleUpdate(req.body);
+        res.status(200).send('OK');
+    } else {
+        res.status(405).send('Method Not Allowed');
+    }
+}
+
 bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
