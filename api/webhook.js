@@ -81,6 +81,7 @@ export const promptForGptAsk = async (ctx, text, isAudioAnswer) => {
                 console.log(`Файл ${audioFilePath} успешно удалён.`);
             } catch (error) {
                 console.error(`Ошибка при обработке аудиофайла: ${error}`);
+                await ctx.reply('Audio '+ error);
             }
         } else {
             await ctx.reply(res);
@@ -193,6 +194,6 @@ export default async function handler(req, res) {
 }
 
 await setWebhook();
-// bot.launch();
+await bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
